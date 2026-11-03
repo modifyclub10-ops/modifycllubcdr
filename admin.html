@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modify Club - Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 25px;
+      background: #090910;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 750px;
+      margin: 30px auto;
+      background: #171725;
+      border: 1px solid #39394d;
+      border-radius: 15px;
+      padding: 25px;
+    }
+    h1 { color: #b58cff; }
+    h2 { font-size: 20px; margin-top: 0; color: #e0d4ff;}
+    input {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      margin: 12px 0;
+      background: #10101b;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: #9258df;
+      color: white;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+    }
+    button:disabled { opacity: .5; }
+    .request {
+      background: #252538;
+      border: 1px solid #44445a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 15px;
+      overflow-wrap: anywhere;
+    }
+    .hidden { display: none; }
+    #message { color: #d5baff; }
+    
+    /* Table ki styling dark theme ke mutabiq */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 25px;
+      background: #10101b;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #39394d;
+      font-size: 14px;
+    }
+    th { background: #252538; color: #b58cff; }
+    .wa-btn {
+      background: #25D366;
+      color: white;
+      padding: 6px 10px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 12px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Modify Club Admin</h1>
+
+    <!-- Login Section -->
+    <section id="loginSection">
+      <h2>Admin Login</h2>
+      <input id="email" type="email" placeholder="Admin email">
+      <input id="password" type="password" placeholder="Admin password">
+      <button id="loginButton">Login</button>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="hidden">
+      
+      <!-- EXPIRING TOMORROW SECTION -->
+      <h2>Expiring Tomorrow (Reminder)</h2>
+      <table id="expiring-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>WhatsApp</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="expiring-body">
+          <tr><td colspan="3">Loading...</td></tr>
+        </tbody>
+      </table>
+
+      <!-- PENDING PAYMENTS SECTION -->
+      <h2>Pending Payment Requests</h2>
+      <button id="refreshButton">Refresh Requests</button>
+      <button id="logoutButton">Logout</button>
+      <div id="requests"></div>
+    </section>
+
+    <p id="message" aria-live="polite"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

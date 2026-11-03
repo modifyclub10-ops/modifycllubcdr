@@ -1,0 +1,214 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modify Club - Membership</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #090910;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 430px;
+      background: #171725;
+      border: 1px solid #34344a;
+      border-radius: 18px;
+      padding: 30px 24px;
+      box-shadow: 0 10px 40px #0008;
+    }
+
+    h1 {
+      text-align: center;
+      color: #b58cff;
+      margin-bottom: 10px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #b9b9c8;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .price {
+      background: #25223a;
+      border: 1px solid #6f4ca8;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .price h2 {
+      color: #c7a5ff;
+      margin-bottom: 6px;
+    }
+
+    .price p {
+      color: #ddd;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 7px;
+      color: #eee;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #414158;
+      border-radius: 9px;
+      background: #10101b;
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #a879ed;
+    }
+
+    .payment {
+      background: #222235;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 20px;
+      line-height: 1.7;
+      color: #ddd;
+      font-size: 14px;
+    }
+
+    .payment strong {
+      color: #c7a5ff;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 22px;
+      border: none;
+      border-radius: 9px;
+      background: #9258df;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #a66af0;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #note {
+      margin-top: 16px;
+      text-align: center;
+      color: #d5baff;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      color: #88889a;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <h1>Modify Club</h1>
+
+    <p class="subtitle">
+      Join our club and enjoy your monthly membership.
+    </p>
+
+    <section class="price">
+      <h2>Rs. 1,000 / Month</h2>
+      <p>Membership duration: 30 Days</p>
+    </section>
+
+    <form id="joinForm">
+
+      <label for="name">Full Name</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        placeholder="Enter your name"
+        required
+      >
+
+      <label for="phone">WhatsApp Number</label>
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        placeholder="03XXXXXXXXX"
+        required
+      >
+
+      <section class="payment">
+        <strong>Payment Method: JazzCash</strong><br>
+        JazzCash Number: <strong>03284369185</strong><br>
+        Amount: <strong>Rs. 1,000</strong><br>
+        Payment karne ke baad transaction reference neeche likhein.
+      </section>
+
+      <label for="reference">JazzCash Transaction Reference</label>
+      <input
+        type="text"
+        id="reference"
+        name="reference"
+        placeholder="Enter transaction reference"
+        required
+      >
+
+      <button type="submit">
+        Submit Membership Request
+      </button>
+
+      <p id="note" aria-live="polite"></p>
+
+    </form>
+
+    <p class="footer">
+      Modify Club © 2026
+    </p>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
