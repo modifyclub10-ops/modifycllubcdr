@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membership Status</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #090910; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .card { background: #171725; padding: 30px; border-radius: 15px; border: 1px solid #39394d; max-width: 400px; width: 100%; text-align: center; }
+    h2 { color: #b58cff; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; box-sizing: border-box; }
+    input { background: #10101b; color: white; border: 1px solid #555; }
+    button { background: #9258df; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+    .hidden { display: none; }
+    .active { color: #28a745; font-weight: bold; font-size: 18px; }
+    .expired { color: #dc3545; font-weight: bold; font-size: 18px; }
+    .pending { color: #ffc107; font-weight: bold; font-size: 18px; }
+    .wa-btn { background: #25D366; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; margin-top: 20px; font-weight: bold; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="card" id="login-card">
+    <h2>Check Membership</h2>
+    <p>Apna WhatsApp number dalein:</p>
+    <input type="text" id="wa-number" placeholder="e.g. 03001234567">
+    <button onclick="startChecking()">Check Status</button>
+  </div>
+
+  <div class="card hidden" id="status-card">
+    <h2 id="status-text">Checking...</h2>
+    <p id="m-name"></p>
+    <p id="m-expiry"></p>
+    
+    <div id="group-link-container" class="hidden">
+      <p style="color: #ccc; font-size: 14px;">Aapki membership active hai! Niche se group join karein:</p>
+      <!-- YAHAN APNA ASLI WHATSAPP GROUP LINK DALO -->
+      <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK_HERE" target="_blank" class="wa-btn">Join WhatsApp Group</a>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://axwqvydjcceahaulupax.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_cVnafI3dTnjY-5b3_P4iVQ_x5l79Akk';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let checkInterval;
+
+    // URL se number uthana (agar form se aaya hai)
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const numberParam = urlParams.get('number');
+      if (numberParam) {
+        document.getElementById('wa-number').value = numberParam;
+        startChecking();
+      }
+    };
+
+    async function startChecking() {
+      const waNumber = document.getElementById('wa-number').value.trim();
+      if (!waNumber) return alert("Please enter number");
+
+      document.getElementById('login-card').classList.add('hidden');
+      document.getElementById('status-card').classList.remove('hidden');
+      document.getElementById('status-text').className = 'pending';
+      document.getElementById('status-text').innerText = 'Checking...';
+
+      // Har 5 second baad check karega
+      clearInterval(checkInterval);
+      await checkStatus(waNumber);
+      checkInterval = setInterval(() => checkStatus(waNumber), 5000);
+    }
+
+    async function checkStatus(waNumber) {
+      // 1. Pehle payment_submissions check karo
+      const { data: pendingData } = await supabaseClient
+        .from('payment_submissions')
+        .select('*')
+        .eq('whatsapp_number', waNumber)
+        .eq('status', 'pending')
+        .limit(1);
+
+      // 2. Phir memberships check karo
+      const { data: memberData } = await supabaseClient
+        .from('memberships')
+        .select('*')
+        .eq('whatsapp_number', waNumber)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const statusText = document.getElementById('status-text');
+      const groupContainer = document.getElementById('group-link-container');
+
+      if (memberData && memberData.length > 0) {
+        // Membership mil gayi!
+        const data = memberData[0];
+        const expiryDate = new Date(data.expires_at);
+
+        document.getElementById('m-name').innerText = 'Name: ' + data.full_name;
+        document.getElementById('m-expiry').innerText = 'Expires On: ' + expiryDate.toLocaleDateString();
+
+        if (expiryDate > new Date()) {
+          statusText.innerText = 'Active ✅';
+          statusText.className = 'active';
+          groupContainer.classList.remove('hidden');
+        } else {
+          statusText.innerText = 'Expired ❌';
+          statusText.className = 'expired';
+          groupContainer.classList.add('hidden');
+        }
+      } else if (pendingData && pendingData.length > 0) {
+        // Payment abhi pending hai
+        statusText.innerText = 'Pending Approval ⏳';
+        statusText.className = 'pending';
+        document.getElementById('m-name').innerText = 'Name: ' + pendingData[0].full_name;
+        document.getElementById('m-expiry').innerText = 'Admin approval ka intezar hai...';
+        groupContainer.classList.add('hidden');
+      } else {
+        // Kuch nahi mila
+        statusText.innerText = 'No Record Found ❌';
+        statusText.className = 'expired';
+        document.getElementById('m-name').innerText = '';
+        document.getElementById('m-expiry').innerText = 'Is number se koi request nahi mili.';
+        groupContainer.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
