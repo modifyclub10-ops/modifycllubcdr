@@ -36,18 +36,20 @@
     <div id="group-link-container" class="hidden">
       <p style="color: #ccc; font-size: 14px;">Aapki membership active hai! Niche se group join karein:</p>
       <!-- YAHAN APNA ASLI WHATSAPP GROUP LINK DALO -->
-      <a href="https://chat.whatsapp.com/YOUR_GROUP_LINK_HERE" target="_blank" class="wa-btn">Join WhatsApp Group</a>
+      <a href="https://chat.whatsapp.com/ApnaGroupLinkYahanDalo" target="_blank" class="wa-btn">Join WhatsApp Group</a>
     </div>
   </div>
 
   <script>
+    // TUMHARI KEYS YAHAN ADD HO GAYI HAIN
     const SUPABASE_URL = 'https://axwqvydjcceahaulupax.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_cVnafI3dTnjY-5b3_P4iVQ_x5l79Akk';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Check karo ke Supabase load hua ya nahi
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let checkInterval;
 
-    // URL se number uthana (agar form se aaya hai)
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const numberParam = urlParams.get('number');
@@ -66,34 +68,35 @@
       document.getElementById('status-text').className = 'pending';
       document.getElementById('status-text').innerText = 'Checking...';
 
-      // Har 5 second baad check karega
       clearInterval(checkInterval);
       await checkStatus(waNumber);
       checkInterval = setInterval(() => checkStatus(waNumber), 5000);
     }
 
     async function checkStatus(waNumber) {
-      // 1. Pehle payment_submissions check karo
-      const { data: pendingData } = await supabaseClient
+      // Database se data fetch kar rahe hain
+      const { data: pendingData, error: pError } = await supabaseClient
         .from('payment_submissions')
         .select('*')
         .eq('whatsapp_number', waNumber)
         .eq('status', 'pending')
         .limit(1);
 
-      // 2. Phir memberships check karo
-      const { data: memberData } = await supabaseClient
+      const { data: memberData, error: mError } = await supabaseClient
         .from('memberships')
         .select('*')
         .eq('whatsapp_number', waNumber)
         .order('created_at', { ascending: false })
         .limit(1);
 
+      // Agar error aaye to console mein dikhao
+      if (pError) console.error("Pending Error:", pError);
+      if (mError) console.error("Member Error:", mError);
+
       const statusText = document.getElementById('status-text');
       const groupContainer = document.getElementById('group-link-container');
 
       if (memberData && memberData.length > 0) {
-        // Membership mil gayi!
         const data = memberData[0];
         const expiryDate = new Date(data.expires_at);
 
@@ -110,14 +113,12 @@
           groupContainer.classList.add('hidden');
         }
       } else if (pendingData && pendingData.length > 0) {
-        // Payment abhi pending hai
         statusText.innerText = 'Pending Approval ⏳';
         statusText.className = 'pending';
         document.getElementById('m-name').innerText = 'Name: ' + pendingData[0].full_name;
         document.getElementById('m-expiry').innerText = 'Admin approval ka intezar hai...';
         groupContainer.classList.add('hidden');
       } else {
-        // Kuch nahi mila
         statusText.innerText = 'No Record Found ❌';
         statusText.className = 'expired';
         document.getElementById('m-name').innerText = '';
