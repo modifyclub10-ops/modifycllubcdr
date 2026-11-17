@@ -6,16 +6,20 @@
   <title>Membership Status</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #090910; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-    .card { background: #171725; padding: 30px; border-radius: 15px; border: 1px solid #39394d; max-width: 400px; width: 100%; text-align: center; }
-    h2 { color: #b58cff; }
-    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; box-sizing: border-box; }
-    input { background: #10101b; color: white; border: 1px solid #555; }
-    button { background: #9258df; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
-    .hidden { display: none; }
-    .active { color: #28a745; font-weight: bold; font-size: 18px; }
-    .expired { color: #dc3545; font-weight: bold; font-size: 18px; }
-    .pending { color: #ffc107; font-weight: bold; font-size: 18px; }
-    .wa-btn { background: #25D366; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; margin-top: 20px; font-weight: bold; }
+    .card { background: #171725; padding: 30px 24px; border-radius: 15px; border: 1px solid #39394d; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    h2 { color: #b58cff; margin-top: 0; margin-bottom: 15px; }
+    p { color: #ccc; font-size: 14px; line-height: 1.5; }
+    input { width: 100%; padding: 13px; margin: 15px 0; border-radius: 8px; box-sizing: border-box; background: #10101b; color: white; border: 1px solid #414158; font-size: 15px; outline: none; }
+    input:focus { border-color: #a879ed; }
+    button { width: 100%; padding: 14px; border-radius: 8px; background: #9258df; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px; }
+    button:hover { background: #a66af0; }
+    .hidden { display: none !important; }
+    .active { color: #28a745 !important; font-weight: bold; font-size: 18px; }
+    .expired { color: #dc3545 !important; font-weight: bold; font-size: 18px; }
+    .pending { color: #ffc107 !important; font-weight: bold; font-size: 18px; }
+    .wa-btn { background: #25D366; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; margin-top: 20px; font-weight: bold; box-sizing: border-box; }
+    .back-link { display: block; margin-top: 25px; color: #88889a; text-decoration: none; font-size: 14px; }
+    .back-link:hover { color: white; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -24,8 +28,9 @@
   <div class="card" id="login-card">
     <h2>Check Membership</h2>
     <p>Apna WhatsApp number dalein:</p>
-    <input type="text" id="wa-number" placeholder="e.g. 03001234567">
+    <input type="tel" id="wa-number" placeholder="e.g. 03001234567">
     <button onclick="startChecking()">Check Status</button>
+    <a href="index.html" class="back-link">← Back to Home</a>
   </div>
 
   <div class="card hidden" id="status-card">
@@ -35,29 +40,32 @@
     
     <div id="group-link-container" class="hidden">
       <p style="color: #ccc; font-size: 14px;">Aapki membership active hai! Niche se group join karein:</p>
-      <!-- YAHAN APNA ASLI WHATSAPP GROUP LINK DALO -->
-      <a href="https://chat.whatsapp.com/ApnaGroupLinkYahanDalo" target="_blank" class="wa-btn">Join WhatsApp Group</a>
+      
+      <!-- YAHAN NAYA LINK DAAL DIYA HAI -->
+      <a href="https://chat.whatsapp.com/BqlmNMQVjwhKzhyuUjPTa1" target="_blank" class="wa-btn">Join WhatsApp Group</a>
     </div>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
   </div>
 
   <script>
-    // TUMHARI KEYS YAHAN ADD HO GAYI HAIN
     const SUPABASE_URL = 'https://axwqvydjcceahaulupax.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_cVnafI3dTnjY-5b3_P4iVQ_x5l79Akk';
-    
-    // Check karo ke Supabase load hua ya nahi
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let checkInterval;
 
-    window.onload = function() {
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById('status-card').classList.add('hidden');
+      document.getElementById('login-card').classList.remove('hidden');
+
       const urlParams = new URLSearchParams(window.location.search);
       const numberParam = urlParams.get('number');
       if (numberParam) {
         document.getElementById('wa-number').value = numberParam;
         startChecking();
       }
-    };
+    });
 
     async function startChecking() {
       const waNumber = document.getElementById('wa-number').value.trim();
@@ -74,24 +82,27 @@
     }
 
     async function checkStatus(waNumber) {
-      // Database se data fetch kar rahe hain
-      const { data: pendingData, error: pError } = await supabaseClient
+      let cleanNum = waNumber.replace(/\s+/g, '');
+      let numWith92 = cleanNum;
+      if (cleanNum.startsWith('0')) numWith92 = '92' + cleanNum.slice(1);
+      let numWithout92 = cleanNum.replace(/^92/, '');
+      let numWith0 = '0' + numWithout92;
+
+      const searchFormats = [cleanNum, numWith92, numWithout92, numWith0, '+' + numWith92];
+
+      const { data: pendingData } = await supabaseClient
         .from('payment_submissions')
         .select('*')
-        .eq('whatsapp_number', waNumber)
+        .in('whatsapp_number', searchFormats)
         .eq('status', 'pending')
         .limit(1);
 
-      const { data: memberData, error: mError } = await supabaseClient
+      const { data: memberData } = await supabaseClient
         .from('memberships')
         .select('*')
-        .eq('whatsapp_number', waNumber)
+        .in('whatsapp_number', searchFormats)
         .order('created_at', { ascending: false })
         .limit(1);
-
-      // Agar error aaye to console mein dikhao
-      if (pError) console.error("Pending Error:", pError);
-      if (mError) console.error("Member Error:", mError);
 
       const statusText = document.getElementById('status-text');
       const groupContainer = document.getElementById('group-link-container');
